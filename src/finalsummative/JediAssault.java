@@ -14,7 +14,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
@@ -41,11 +44,25 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> ship = new ArrayList<>();
     
-    Rectangle player = new Rectangle(300, 100, 50, 50);
+    Rectangle player = new Rectangle(300, 100, 80, 110);
     int moveX = 0;
     int moveY = 0;
     int gravity = 1;
     
+    BufferedImage jedi = loadImage("PixelArtJedi.png");
+    BufferedImage jediLeft = loadImage("PixelArtJediLeft.png");
+    BufferedImage jediAttack = loadImage("PixelArtJediAttack.png");
+    boolean jLeft = false;
+    public BufferedImage loadImage(String filename){
+        BufferedImage img = null;
+        try{
+            img = ImageIO.read(new File(filename));
+        }catch(Exception e){
+            System.out.println("Error Loading " + filename);
+            
+        }
+        return img;
+    }
     // drawing of the game happens in here
     // we use the Graphics object, g, to perform the drawing
     // NOTE: This is already double buffered!(helps with framerate/speed)
@@ -56,9 +73,12 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         g.clearRect(0, 0, WIDTH, HEIGHT);
         
         // GAME DRAWING GOES HERE 
-        g.setColor(brown);
-        g.fillRect(player.x, player.y, player.width, player.height);
-        g.setColor(Color.BLACK);
+        if(!jLeft){
+        g.drawImage(jedi, player.x, player.y, player.width, player.height, null);
+        }else if(jLeft){
+            g.drawImage(jediLeft, player.x, player.y, player.width, player.height, null);
+            //don't forget to add an attack animation.
+        }else if()
         for (Rectangle block: blocks){
             g.fillRect(block.x, block.y, block.width, block.height);
         }g.setColor(Color.GRAY);
@@ -99,8 +119,10 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             
             if (a){
                 moveX = -5;
+                jLeft = true;
             }else if (d){
                 moveX = 5;
+                jLeft = false;
             }else{
                 moveX = 0;
             }
@@ -122,7 +144,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                 if (player.intersects(block)){
                     Rectangle intersection = player.intersection(block);
                     if (intersection.width < intersection.height){
-                        if (player.x < block.x){
+                        if (player.x < block.x && jLeft){
                             player.x = player.x - intersection.width;
                         }else{
                             player.x = player.x + intersection.width;
