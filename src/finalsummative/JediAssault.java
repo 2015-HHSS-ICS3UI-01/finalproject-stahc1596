@@ -41,7 +41,6 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     boolean d = false;
     boolean jump = false;
     boolean inAir = false;
-    boolean attack = false;
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> ship = new ArrayList<>();
     
@@ -52,9 +51,10 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     
     BufferedImage jedi = loadImage("PixelArtJedi.png");
     BufferedImage jediLeft = loadImage("PixelArtJediLeft.png");
-    BufferedImage jediAttack = loadImage("PixelArtJediAttack.psd");
-    BufferedImage jediAttackLeft = loadImage("PixelArtJediAttackLeft.psd");
+    BufferedImage jediAttack = loadImage("PixelArtJediAttack.png");
+    BufferedImage jediAttackLeft = loadImage("PixelArtJediAttackLeft.png");
     boolean jLeft = false;
+    boolean attack = false;
     public BufferedImage loadImage(String filename){
         BufferedImage img = null;
         try{
@@ -79,8 +79,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             g.drawImage(jediAttack, player.x, player.y, player.width, player.height, null);
         }else if(jLeft && attack){
             g.drawImage(jediAttackLeft, player.x, player.y, player.width, player.height, null);
-        }if(!jLeft){
-        g.drawImage(jedi, player.x, player.y, player.width, player.height, null);
+        }else if(!jLeft){
+            g.drawImage(jedi, player.x, player.y, player.width, player.height, null);
         }else{
             g.drawImage(jediLeft, player.x, player.y, player.width, player.height, null);
         }
