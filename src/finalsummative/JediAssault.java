@@ -41,6 +41,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     boolean d = false;
     boolean jump = false;
     boolean inAir = false;
+    boolean attack = false;
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> ship = new ArrayList<>();
     
@@ -51,7 +52,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     
     BufferedImage jedi = loadImage("PixelArtJedi.png");
     BufferedImage jediLeft = loadImage("PixelArtJediLeft.png");
-    BufferedImage jediAttack = loadImage("PixelArtJediAttack.png");
+    BufferedImage jediAttack = loadImage("PixelArtJediAttack.psd");
+    BufferedImage jediAttackLeft = loadImage("PixelArtJediAttackLeft.psd");
     boolean jLeft = false;
     public BufferedImage loadImage(String filename){
         BufferedImage img = null;
@@ -73,12 +75,15 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         g.clearRect(0, 0, WIDTH, HEIGHT);
         
         // GAME DRAWING GOES HERE 
-        if(!jLeft){
+        if(!jLeft && attack){
+            g.drawImage(jediAttack, player.x, player.y, player.width, player.height, null);
+        }else if(jLeft && attack){
+            g.drawImage(jediAttackLeft, player.x, player.y, player.width, player.height, null);
+        }if(!jLeft){
         g.drawImage(jedi, player.x, player.y, player.width, player.height, null);
-        }else if(jLeft){
+        }else{
             g.drawImage(jediLeft, player.x, player.y, player.width, player.height, null);
-            //don't forget to add an attack animation.
-        }else if()
+        }
         for (Rectangle block: blocks){
             g.fillRect(block.x, block.y, block.width, block.height);
         }g.setColor(Color.GRAY);
@@ -140,6 +145,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                 moveY = 0;
                 inAir = false;
             }
+            if(attack){}
             for (Rectangle block: blocks){
                 if (player.intersects(block)){
                     Rectangle intersection = player.intersection(block);
@@ -240,15 +246,22 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
         //left click will attack and right will deflect
+        if(e.getButton() == MouseEvent.BUTTON1){
+            attack = true;
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        if(e.getButton() == MouseEvent.BUTTON1){
+            attack = false;
+        }
     }
 
     @Override
