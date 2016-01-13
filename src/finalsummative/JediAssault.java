@@ -36,11 +36,13 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     // you just need to select an approproate framerate
     long desiredFPS = 60;
     long desiredTime = (1000)/desiredFPS;
-    Color brown = new Color(107, 88, 88);
+    Color tan = new Color(240, 194, 165);
     boolean a = false;
     boolean d = false;
     boolean jump = false;
-    boolean inAir = false;
+    boolean jumpR = true;
+    int inAir = 0;
+    int life = 3;
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> ship = new ArrayList<>();
     
@@ -53,6 +55,9 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     BufferedImage jediLeft = loadImage("PixelArtJediLeft.png");
     BufferedImage jediAttack = loadImage("PixelArtJediAttack.png");
     BufferedImage jediAttackLeft = loadImage("PixelArtJediAttackLeft.png");
+    BufferedImage heart = loadImage("heart.png");
+    BufferedImage heartB = loadImage("heartB.png");
+    BufferedImage tatooine = loadImage("tatooineBackground.png");
     boolean jLeft = false;
     boolean attack = false;
     public BufferedImage loadImage(String filename){
@@ -75,6 +80,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         g.clearRect(0, 0, WIDTH, HEIGHT);
         
         // GAME DRAWING GOES HERE 
+        g.drawImage(tatooine, 0, 0, WIDTH, HEIGHT, null);
+                
         if(!jLeft && attack){
             g.drawImage(jediAttack, player.x, player.y, player.width, player.height, null);
         }else if(jLeft && attack){
@@ -84,6 +91,26 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         }else{
             g.drawImage(jediLeft, player.x, player.y, player.width, player.height, null);
         }
+        
+        if(life == 3){
+            g.drawImage(heart, 0, 0, 25, 25, null);
+            g.drawImage(heart, 30, 0, 25, 25, null);
+            g.drawImage(heart, 60, 0, 25, 25, null);
+        }else if (life == 2){
+            g.drawImage(heart, 0, 0, 25, 25, null);
+            g.drawImage(heart, 30, 0, 25, 25, null);
+            g.drawImage(heartB, 60, 0, 25, 25, null);
+        }else if (life == 1){
+            g.drawImage(heart, 0, 0, 25, 25, null);
+            g.drawImage(heartB, 30, 0, 25, 25, null);
+            g.drawImage(heartB, 60, 0, 25, 25, null);
+        }else{
+            g.drawImage(heartB, 0, 0, 25, 25, null);
+            g.drawImage(heartB, 30, 0, 25, 25, null);
+            g.drawImage(heartB, 60, 0, 25, 25, null);
+        }
+        
+        g.setColor(tan);
         for (Rectangle block: blocks){
             g.fillRect(block.x, block.y, block.width, block.height);
         }g.setColor(Color.GRAY);
@@ -133,17 +160,19 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             }
             moveY = moveY + gravity;
             
-            if (jump && !inAir){
+            if (jump && inAir != 2 && jumpR){
+                jumpR = false;
                 moveY = -20;
-                inAir = true;
+                inAir++;
             }
+            
             player.x = player.x + moveX;
             player.y = player.y + moveY;
             
             if (player.y + player.height > HEIGHT){
                 player.y = HEIGHT - player.height;
                 moveY = 0;
-                inAir = false;
+                inAir = 0;
             }
             if(attack){}
             for (Rectangle block: blocks){
@@ -162,7 +191,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                         }else{
                             player.y = player.y - intersection.height;
                             moveY = 0;
-                            inAir = false;
+                            inAir = 0;
                         }
                     }
                 }
@@ -219,6 +248,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
 
     @Override
     public void keyTyped(KeyEvent e) {
+        
     }
 
     @Override
@@ -228,7 +258,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             a = true;
         }else if (e.getKeyCode() == KeyEvent.VK_D){
             d = true;
-        }else if (e.getKeyCode() == KeyEvent.VK_SPACE){
+        }
+         if (e.getKeyCode() == KeyEvent.VK_SPACE){
             jump = true;
         }
     }
@@ -241,6 +272,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             d = false;
         }else if (e.getKeyCode() == KeyEvent.VK_SPACE){
             jump = false;
+            jumpR = true;
         }
     }
 
