@@ -46,7 +46,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> ship = new ArrayList<>();
     
-    Rectangle player = new Rectangle(300, 100, 80, 110);
+    Rectangle player = new Rectangle(400, 100, 80, 110);
     int moveX = 0;
     int moveY = 0;
     int gravity = 1;
@@ -113,6 +113,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         g.setColor(tan);
         for (Rectangle block: blocks){
             g.fillRect(block.x, block.y, block.width, block.height);
+            block.x = block.x + moveX;
         }g.setColor(Color.GRAY);
         for (Rectangle block: ship){
             g.fillRect(block.x, block.y, block.width, block.height);
@@ -127,12 +128,13 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     public void run()
     {
         
-        blocks.add(new Rectangle(200, 450, 100, 50));
-        blocks.add(new Rectangle(150, 400, 50, 50));
-        blocks.add(new Rectangle(100, 350, 50, 50));
-        blocks.add(new Rectangle(0, 300, 100, 50));
-        
-        ship.add(new Rectangle(300, 100, 200, 100));
+        blocks.add(new Rectangle(550, 550, 100, 50));
+        blocks.add(new Rectangle(150, 550, 100, 50));
+        blocks.add(new Rectangle(650, 500, 50, 100));
+        blocks.add(new Rectangle(700, 450, 100, 150));
+        blocks.add(new Rectangle(250, 350, 300, 50));
+        blocks.add(new Rectangle(100, 500, 50, 100));
+        blocks.add(new Rectangle(0, 450, 100, 150));
         // Used to keep track of time used to draw and update the game
         // This is used to limit the framerate later on
         long startTime;
@@ -148,12 +150,14 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             
             // all your game rules and move is done in here
             // GAME LOGIC STARTS HERE 
-            
+            if (player.x != 400){
+                player.x = 400;
+            }
             if (a){
-                moveX = -5;
+                moveX = 5;
                 jLeft = true;
             }else if (d){
-                moveX = 5;
+                moveX = -5;
                 jLeft = false;
             }else{
                 moveX = 0;
@@ -166,7 +170,6 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                 inAir++;
             }
             
-            player.x = player.x + moveX;
             player.y = player.y + moveY;
             
             if (player.y + player.height > HEIGHT){
@@ -179,15 +182,16 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                 if (player.intersects(block)){
                     Rectangle intersection = player.intersection(block);
                     if (intersection.width < intersection.height){
-                        if (player.x < block.x && jLeft){
+                        if (player.x < block.x && !jLeft){
                             player.x = player.x - intersection.width;
+                            moveX = 0;
                         }else{
                             player.x = player.x + intersection.width;
+                            moveX = 0;
                         }
                     }else{
                         if (player.y > block.y){
-                            player.y = player.y + intersection.height;
-                            moveY = 0;
+                            
                         }else{
                             player.y = player.y - intersection.height;
                             moveY = 0;
