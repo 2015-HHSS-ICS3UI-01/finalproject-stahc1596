@@ -47,9 +47,14 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     ArrayList<Rectangle> ship = new ArrayList<>();
     
     Rectangle player = new Rectangle(400, 100, 80, 110);
+    Rectangle enemy = new Rectangle(100, 100, 80, 100);
     int moveX = 0;
     int moveY = 0;
+    int eMoveX = 0;
+    int eMoveY = 0;
     int gravity = 1;
+    int distance = 0;
+    boolean eDirectionLeft = false;
     
     BufferedImage jedi = loadImage("PixelArtJedi.png");
     BufferedImage jediLeft = loadImage("PixelArtJediLeft.png");
@@ -81,6 +86,12 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         
         // GAME DRAWING GOES HERE 
         g.drawImage(tatooine, 0, 0, WIDTH, HEIGHT, null);
+        
+        g.setColor(tan);
+        for (Rectangle block: blocks){
+            g.fillRect(block.x, block.y, block.width, block.height);
+            
+        }
                 
         if(!jLeft && attack){
             g.drawImage(jediAttack, player.x, player.y, player.width, player.height, null);
@@ -91,6 +102,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         }else{
             g.drawImage(jediLeft, player.x, player.y, player.width, player.height, null);
         }
+        g.setColor(Color.RED);
+        g.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
         
         if(life == 3){
             g.drawImage(heart, 0, 0, 25, 25, null);
@@ -110,11 +123,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             g.drawImage(heartB, 60, 0, 25, 25, null);
         }
         
-        g.setColor(tan);
-        for (Rectangle block: blocks){
-            g.fillRect(block.x, block.y, block.width, block.height);
-            block.x = block.x + moveX;
-        }g.setColor(Color.GRAY);
+        g.setColor(Color.GRAY);
         for (Rectangle block: ship){
             g.fillRect(block.x, block.y, block.width, block.height);
         }
@@ -163,6 +172,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                 moveX = 0;
             }
             moveY = moveY + gravity;
+            eMoveY = eMoveY + gravity;
             
             if (jump && inAir != 2 && jumpR){
                 jumpR = false;
@@ -177,20 +187,41 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                 moveY = 0;
                 inAir = 0;
             }
+            
+           if (enemy.x > player.x){
+               distance = enemy.x - player.x;
+               eDirectionLeft = true;
+           }else if (enemy.x < player.x){
+               distance = enemy.x + player.x;
+               eDirectionLeft = false;
+           }if (eDirectionLeft && distance > 100){
+               eMoveX = - 5;
+           }else if (!eDirectionLeft && distance < 100){
+               eMoveX = 5;
+           }else{
+               eMoveX = 0;
+           }
+            enemy.x = enemy.x + moveX;
+            for (Rectangle block: blocks){
+                block.x = block.x + moveX;
+            }
+            
             if(attack){}
             for (Rectangle block: blocks){
                 if (player.intersects(block)){
                     Rectangle intersection = player.intersection(block);
                     if (intersection.width < intersection.height){
                         if (player.x < block.x && !jLeft){
-                            player.x = player.x - intersection.width;
-                            moveX = 0;
+                            moveX = intersection.width;
                         }else{
-                            player.x = player.x + intersection.width;
-                            moveX = 0;
+                            moveX = - intersection.width;
                         }
+                        
+                        for (Rectangle b: blocks){
+                        b.x = b.x + moveX;
+                    }
                     }else{
-                        if (player.y > block.y){
+                        if (player.y + 85 > block.y){
                             
                         }else{
                             player.y = player.y - intersection.height;
@@ -198,8 +229,11 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                             inAir = 0;
                         }
                     }
+                    
                 }
             }
+            
+            
 
             // GAME LOGIC ENDS HERE 
             
