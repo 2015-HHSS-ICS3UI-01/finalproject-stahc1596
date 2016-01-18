@@ -41,6 +41,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     boolean d = false;
     boolean jump = false;
     boolean jumpR = true;
+    boolean eJump = false;
     int inAir = 0;
     int life = 3;
     ArrayList<Rectangle> blocks = new ArrayList<>();
@@ -53,8 +54,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     int eMoveX = 0;
     int eMoveY = 0;
     int gravity = 1;
-    int distance = 0;
     boolean eDirectionLeft = false;
+    boolean eInAir = false;
     
     BufferedImage jedi = loadImage("PixelArtJedi.png");
     BufferedImage jediLeft = loadImage("PixelArtJediLeft.png");
@@ -171,6 +172,14 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             }else{
                 moveX = 0;
             }
+            if (enemy.x > player.x + 250){
+                eMoveX = - 3;
+            }else if (enemy.x < player.x - 250){
+                eMoveX = 3;
+            }else{
+                eMoveX = 0;
+            }
+            enemy.x = enemy.x + eMoveX;
             moveY = moveY + gravity;
             eMoveY = eMoveY + gravity;
             
@@ -179,31 +188,26 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                 moveY = -20;
                 inAir++;
             }
-            
+            if (eJump && !eInAir){
+                eMoveY = - 20;
+                eInAir = true;
+            }
             player.y = player.y + moveY;
-            
+            enemy.y = enemy.y + eMoveY;
             if (player.y + player.height > HEIGHT){
                 player.y = HEIGHT - player.height;
                 moveY = 0;
                 inAir = 0;
             }
-            
-           if (enemy.x > player.x){
-               distance = enemy.x - player.x;
-               eDirectionLeft = true;
-           }else if (enemy.x < player.x){
-               distance = enemy.x + player.x;
-               eDirectionLeft = false;
-           }if (eDirectionLeft && distance > 100){
-               eMoveX = - 5;
-           }else if (!eDirectionLeft && distance < 100){
-               eMoveX = 5;
-           }else{
-               eMoveX = 0;
-           }
-            enemy.x = enemy.x + moveX;
+            if (enemy.y + enemy.height > HEIGHT){
+                enemy.y = HEIGHT - enemy.height;
+                eMoveY = 0;
+                eInAir = false;
+            }
+                enemy.x = enemy.x + moveX;
             for (Rectangle block: blocks){
                 block.x = block.x + moveX;
+                
             }
             
             if(attack){}
@@ -213,8 +217,10 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                     if (intersection.width < intersection.height){
                         if (player.x < block.x && !jLeft){
                             moveX = intersection.width;
+                            enemy.x = enemy.x + moveX;
                         }else{
                             moveX = - intersection.width;
+                            enemy.x = enemy.x + moveX;
                         }
                         
                         for (Rectangle b: blocks){
@@ -222,7 +228,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                     }
                     }else{
                         if (player.y + 85 > block.y){
-                            
+                            player.y = player.y + intersection.height;
+                            moveY = 0;
                         }else{
                             player.y = player.y - intersection.height;
                             moveY = 0;
