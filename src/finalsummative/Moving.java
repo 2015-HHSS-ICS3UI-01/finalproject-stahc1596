@@ -24,7 +24,6 @@ public class Moving extends JComponent implements KeyListener{
     // Height and Width of our game
     static final int WIDTH = 800;
     static final int HEIGHT = 600;
-    
     // sets the framerate and delay for our game
     // you just need to select an approproate framerate
     long desiredFPS = 60;

@@ -2,9 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package finalsummative;
-
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -25,17 +23,15 @@ import javax.swing.JFrame;
  *
  * @author stahc1596
  */
-
-public class JediAssault extends JComponent implements KeyListener, MouseListener{
+public class JediAssault extends JComponent implements KeyListener, MouseListener {
 
     // Height and Width of our game
     static final int WIDTH = 800;
     static final int HEIGHT = 600;
-    
     // sets the framerate and delay for our game
     // you just need to select an approproate framerate
     long desiredFPS = 60;
-    long desiredTime = (1000)/desiredFPS;
+    long desiredTime = (1000) / desiredFPS;
     Color tan = new Color(240, 194, 165);
     boolean a = false;
     boolean d = false;
@@ -46,9 +42,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     int life = 3;
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> ship = new ArrayList<>();
-    
+    ArrayList<Rectangle> enemies = new ArrayList<>();
     Rectangle player = new Rectangle(400, 100, 80, 110);
-    Rectangle enemy = new Rectangle(100, 100, 80, 100);
     int moveX = 0;
     int moveY = 0;
     int eMoveX = 0;
@@ -56,7 +51,6 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     int gravity = 1;
     boolean eDirectionLeft = false;
     boolean eInAir = false;
-    
     BufferedImage jedi = loadImage("PixelArtJedi.png");
     BufferedImage jediLeft = loadImage("PixelArtJediLeft.png");
     BufferedImage jediAttack = loadImage("PixelArtJediAttack.png");
@@ -66,78 +60,79 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     BufferedImage tatooine = loadImage("tatooineBackground.png");
     boolean jLeft = false;
     boolean attack = false;
-    public BufferedImage loadImage(String filename){
+
+    public BufferedImage loadImage(String filename) {
         BufferedImage img = null;
-        try{
+        try {
             img = ImageIO.read(new File(filename));
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println("Error Loading " + filename);
-            
+
         }
         return img;
     }
     // drawing of the game happens in here
     // we use the Graphics object, g, to perform the drawing
     // NOTE: This is already double buffered!(helps with framerate/speed)
+
     @Override
-    public void paintComponent(Graphics g)
-    {
+    public void paintComponent(Graphics g) {
         // always clear the screen first!
         g.clearRect(0, 0, WIDTH, HEIGHT);
-        
+
         // GAME DRAWING GOES HERE 
         g.drawImage(tatooine, 0, 0, WIDTH, HEIGHT, null);
-        
+
         g.setColor(tan);
-        for (Rectangle block: blocks){
+        for (Rectangle block : blocks) {
             g.fillRect(block.x, block.y, block.width, block.height);
-            
+
         }
-                
-        if(!jLeft && attack){
+
+        if (!jLeft && attack) {
             g.drawImage(jediAttack, player.x, player.y, player.width, player.height, null);
-        }else if(jLeft && attack){
+        } else if (jLeft && attack) {
             g.drawImage(jediAttackLeft, player.x, player.y, player.width, player.height, null);
-        }else if(!jLeft){
+        } else if (!jLeft) {
             g.drawImage(jedi, player.x, player.y, player.width, player.height, null);
-        }else{
+        } else {
             g.drawImage(jediLeft, player.x, player.y, player.width, player.height, null);
         }
         g.setColor(Color.RED);
-        g.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-        
-        if(life == 3){
+        for (Rectangle enemy : enemies) {
+            g.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+
+        if (life == 3) {
             g.drawImage(heart, 0, 0, 25, 25, null);
             g.drawImage(heart, 30, 0, 25, 25, null);
             g.drawImage(heart, 60, 0, 25, 25, null);
-        }else if (life == 2){
+        } else if (life == 2) {
             g.drawImage(heart, 0, 0, 25, 25, null);
             g.drawImage(heart, 30, 0, 25, 25, null);
             g.drawImage(heartB, 60, 0, 25, 25, null);
-        }else if (life == 1){
+        } else if (life == 1) {
             g.drawImage(heart, 0, 0, 25, 25, null);
             g.drawImage(heartB, 30, 0, 25, 25, null);
             g.drawImage(heartB, 60, 0, 25, 25, null);
-        }else{
+        } else {
             g.drawImage(heartB, 0, 0, 25, 25, null);
             g.drawImage(heartB, 30, 0, 25, 25, null);
             g.drawImage(heartB, 60, 0, 25, 25, null);
         }
-        
+
         g.setColor(Color.GRAY);
-        for (Rectangle block: ship){
+        for (Rectangle block : ship) {
             g.fillRect(block.x, block.y, block.width, block.height);
         }
-        
+
         // GAME DRAWING ENDS HERE
     }
-    
-    
+
     // The main game loop
     // In here is where all the logic for my game will go
-    public void run()
-    {
-        
+    public void run() {
+
         blocks.add(new Rectangle(550, 550, 100, 50));
         blocks.add(new Rectangle(150, 550, 100, 50));
         blocks.add(new Rectangle(650, 500, 50, 100));
@@ -145,140 +140,177 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         blocks.add(new Rectangle(250, 350, 300, 50));
         blocks.add(new Rectangle(100, 500, 50, 100));
         blocks.add(new Rectangle(0, 450, 100, 150));
+        enemies.add(new Rectangle(100, 100, 80, 110));
+        enemies.add(new Rectangle(400, 400, 80, 110));
         // Used to keep track of time used to draw and update the game
         // This is used to limit the framerate later on
         long startTime;
         long deltaTime;
-        
+
         // the main game loop section
         // game will end if you set done = false;
-        boolean done = false; 
-        while(!done)
-        {
+        boolean done = false;
+        while (!done) {
             // determines when we started so we can keep a framerate
             startTime = System.currentTimeMillis();
-            
+
             // all your game rules and move is done in here
             // GAME LOGIC STARTS HERE 
-            if (player.x != 400){
+            if (player.x != 400) {
                 player.x = 400;
             }
-            if (a){
+            if (a) {
                 moveX = 5;
                 jLeft = true;
-            }else if (d){
+            } else if (d) {
                 moveX = -5;
                 jLeft = false;
-            }else{
+            } else {
                 moveX = 0;
             }
-            if (enemy.x > player.x + 250){
-                eMoveX = - 3;
-            }else if (enemy.x < player.x - 250){
-                eMoveX = 3;
-            }else{
-                eMoveX = 0;
-            }
-            enemy.x = enemy.x + eMoveX;
+
             moveY = moveY + gravity;
-            eMoveY = eMoveY + gravity;
-            
-            if (jump && inAir != 2 && jumpR){
+
+            if (jump && inAir != 2 && jumpR) {
                 jumpR = false;
                 moveY = -20;
                 inAir++;
             }
-            if (eJump && !eInAir){
-                eMoveY = - 20;
-                eInAir = true;
-            }
+
             player.y = player.y + moveY;
-            enemy.y = enemy.y + eMoveY;
-            if (player.y + player.height > HEIGHT){
+
+            if (player.y + player.height > HEIGHT) {
                 player.y = HEIGHT - player.height;
                 moveY = 0;
                 inAir = 0;
             }
-            if (enemy.y + enemy.height > HEIGHT){
-                enemy.y = HEIGHT - enemy.height;
-                eMoveY = 0;
-                eInAir = false;
-            }
+            for (Rectangle enemy : enemies) {
+                if (enemy.x > player.x + 250) {
+                    eMoveX = - 3;
+                } else if (enemy.x < player.x - 250) {
+                    eMoveX = 3;
+                } else {
+                    eMoveX = 0;
+                }
+
+                enemy.x = enemy.x + eMoveX;
+                eMoveY = eMoveY + gravity;
+                if (eJump && !eInAir) {
+                    eMoveY = - 20;
+                    eInAir = true;
+                }
+                enemy.y = enemy.y + eMoveY;
+                if (enemy.y + enemy.height > HEIGHT) {
+                    enemy.y = HEIGHT - enemy.height;
+                    eMoveY = 0;
+                    eInAir = false;
+                }
                 enemy.x = enemy.x + moveX;
-            for (Rectangle block: blocks){
-                block.x = block.x + moveX;
-                
             }
-            
-            if(attack){}
-            for (Rectangle block: blocks){
-                if (player.intersects(block)){
+            for (Rectangle block : blocks) {
+                block.x = block.x + moveX;
+
+            }
+
+            if (attack) {
+            }
+            for (Rectangle block : blocks) {
+                if (player.intersects(block)) {
                     Rectangle intersection = player.intersection(block);
-                    if (intersection.width < intersection.height){
-                        if (player.x < block.x && !jLeft){
+                    if (intersection.width < intersection.height) {
+                        if (player.x < block.x && !jLeft) {
                             moveX = intersection.width;
-                            enemy.x = enemy.x + moveX;
-                        }else{
-                            moveX = - intersection.width;
-                            enemy.x = enemy.x + moveX;
+
+                        } else {
+                            moveX = -intersection.width;
+
                         }
-                        
-                        for (Rectangle b: blocks){
-                        b.x = b.x + moveX;
-                    }
-                    }else{
-                        if (player.y + 85 > block.y){
+
+
+                    } else {
+                        if (player.y > block.y) {
                             player.y = player.y + intersection.height;
                             moveY = 0;
-                        }else{
+                        } else {
                             player.y = player.y - intersection.height;
                             moveY = 0;
                             inAir = 0;
                         }
                     }
-                    
+                    for (Rectangle b : blocks) {
+                        b.x = b.x + moveX;
+                    }
+                    for (Rectangle enemy : enemies) {
+                        enemy.x = enemy.x + moveX;
+
+                    }
+                }
+
+                for (Rectangle enemy : enemies) {
+                    if (enemy.intersects(block)) {
+                        Rectangle intersection = enemy.intersection(block);
+                        if (intersection.width < intersection.height) {
+                            if (enemy.x < block.x) {
+
+                                enemy.x = enemy.x - intersection.width;
+                            } else {
+
+                                enemy.x = enemy.x + intersection.width;
+                            }
+
+                        } else {
+                            if (enemy.y > block.y) {
+                                enemy.y = enemy.y + intersection.height;
+
+                            } else {
+                                enemy.y = enemy.y - intersection.height;
+
+                            }
+                        }
+                    }
+
+
                 }
             }
-            
-            
+
+
+
 
             // GAME LOGIC ENDS HERE 
-            
+
             // update the drawing (calls paintComponent)
             repaint();
-            
-            
-            
+
+
+
             // SLOWS DOWN THE GAME BASED ON THE FRAMERATE ABOVE
             // USING SOME SIMPLE MATH
             deltaTime = System.currentTimeMillis() - startTime;
-            if(deltaTime > desiredTime)
-            {
+            if (deltaTime > desiredTime) {
                 //took too much time, don't wait
-            }else
-            {
-                try
-                {
+            } else {
+                try {
                     Thread.sleep(desiredTime - deltaTime);
-                }catch(Exception e){};
+                } catch (Exception e) {
+                };
             }
         }
     }
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // creates a windows to show my game
         JFrame frame = new JFrame("My Game");
-       
+
         // creates an instance of my game
         JediAssault game = new JediAssault();
         // sets the size of my game
-        game.setPreferredSize(new Dimension(WIDTH,HEIGHT));
+        game.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         // adds the game to the window
         frame.add(game);
-         
+
         // sets some options and size of the window automatically
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -293,29 +325,28 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
 
     @Override
     public void keyTyped(KeyEvent e) {
-        
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
         //create a left right and jump
-        if (e.getKeyCode() == KeyEvent.VK_A){
+        if (e.getKeyCode() == KeyEvent.VK_A) {
             a = true;
-        }else if (e.getKeyCode() == KeyEvent.VK_D){
+        } else if (e.getKeyCode() == KeyEvent.VK_D) {
             d = true;
         }
-         if (e.getKeyCode() == KeyEvent.VK_SPACE){
+        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             jump = true;
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_A){
+        if (e.getKeyCode() == KeyEvent.VK_A) {
             a = false;
-        }else if (e.getKeyCode() == KeyEvent.VK_D){
+        } else if (e.getKeyCode() == KeyEvent.VK_D) {
             d = false;
-        }else if (e.getKeyCode() == KeyEvent.VK_SPACE){
+        } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
             jump = false;
             jumpR = true;
         }
@@ -323,20 +354,19 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
         //left click will attack and right will deflect
-        if(e.getButton() == MouseEvent.BUTTON1){
+        if (e.getButton() == MouseEvent.BUTTON1) {
             attack = true;
         }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON1){
+        if (e.getButton() == MouseEvent.BUTTON1) {
             attack = false;
         }
     }
