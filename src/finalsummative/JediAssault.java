@@ -41,8 +41,10 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     int inAir = 0;
     int life = 3;
     ArrayList<Rectangle> blocks = new ArrayList<>();
-    ArrayList<Rectangle> ship = new ArrayList<>();
     ArrayList<Rectangle> enemies = new ArrayList<>();
+    ArrayList<Rectangle> jumpPads = new ArrayList<>();
+    int[] enemiesAry = new int[2];
+    int[] enemiesY = new int[2];
     Rectangle player = new Rectangle(400, 100, 40, 55);
     int moveX = 0;
     int moveY = 0;
@@ -88,6 +90,9 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         for (Rectangle block : blocks) {
             g.fillRect(block.x, block.y, block.width, block.height);
 
+        }for (Rectangle jumps: jumpPads){
+            g.setColor(Color.BLUE);
+            g.fillRect(jumps.x, jumps.y, jumps.width, jumps.height);
         }
 
         if (!jLeft && attack) {
@@ -122,11 +127,6 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             g.drawImage(heartB, 60, 0, 25, 25, null);
         }
 
-        g.setColor(Color.GRAY);
-        for (Rectangle block : ship) {
-            g.fillRect(block.x, block.y, block.width, block.height);
-        }
-
         // GAME DRAWING ENDS HERE
     }
 
@@ -143,6 +143,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         blocks.add(new Rectangle(0, 450, 100, 150));
         enemies.add(new Rectangle(100, 100, 40, 55));
         enemies.add(new Rectangle(400, 400, 40, 55));
+        jumpPads.add(new Rectangle(150, 550, 100, 1));
         // Used to keep track of time used to draw and update the game
         // This is used to limit the framerate later on
         long startTime;
@@ -166,7 +167,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             } else {
                 moveX = 0;
             }
-            
+
             moveY = moveY + gravity;
 
             if (jump && inAir != 2 && jumpR) {
@@ -182,29 +183,30 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                 moveY = 0;
                 inAir = 0;
             }
-            for (Rectangle enemy : enemies) {
-                if (enemy.x > player.x + 250) {
+            for (int i = 0; i < enemies.size(); i++) {
+                Rectangle enemy = enemies.get(i);
+                if (enemy.x > player.x + 250 && enemy.y != player.y) {
                     eMoveX = - 3;
-                } else if (enemy.x < player.x - 250) {
+                } else if (enemy.x < player.x - 250 && enemy.y != player.y) {
                     eMoveX = 3;
                 } else {
                     eMoveX = 0;
                 }
 
                 enemy.x = enemy.x + eMoveX;
-                eMoveY = eMoveY + gravity;
+                enemiesY[i] = enemiesY[i] + gravity;
                 if (eJump && !eInAir) {
-                    eMoveY = - 20;
+                    enemiesY[i] = -15;
                     eInAir = true;
                 }
-                enemy.y = enemy.y + eMoveY;
+                enemy.y = enemy.y + enemiesY[i];
                 if (enemy.y + enemy.height > HEIGHT) {
                     enemy.y = HEIGHT - enemy.height;
-                    eMoveY = 0;
+                    enemiesY[i] = 0;
                     eInAir = false;
                 }
             }
-            
+
 
             if (attack) {
             }
@@ -214,7 +216,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                     if (intersection.width < intersection.height) {
                         if (player.x < block.x && !jLeft) {
                             player.x = player.x - intersection.width - 2;
-                        }else if (player.x > block.x && jLeft){
+                        } else if (player.x > block.x && jLeft) {
                             player.x = player.x + intersection.width + 2;
                         }
 
@@ -229,11 +231,12 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                             inAir = 0;
                         }
                     }
-                    
-                    
+
+
                 }
 
-                for (Rectangle enemy : enemies) {
+                for (int i = 0; i < enemies.size(); i++) {
+                    Rectangle enemy = enemies.get(i);
                     if (enemy.intersects(block)) {
                         Rectangle intersection = enemy.intersection(block);
                         if (intersection.width < intersection.height) {
@@ -248,10 +251,11 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                         } else {
                             if (enemy.y > block.y) {
                                 enemy.y = enemy.y + intersection.height;
-
+                                enemiesY[i] = 0;
                             } else {
                                 enemy.y = enemy.y - intersection.height;
-
+                                enemiesY[i] = 0;
+                                eInAir = false;
                             }
                         }
                     }
