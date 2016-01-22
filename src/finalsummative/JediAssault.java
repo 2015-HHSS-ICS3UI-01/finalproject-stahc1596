@@ -42,7 +42,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     int life = 3;
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> enemies = new ArrayList<>();
-    ArrayList<Rectangle> jumpPads = new ArrayList<>();
+    ArrayList<Rectangle> bullets = new ArrayList<>();
     int[] enemiesAry = new int[2];
     int[] enemiesY = new int[2];
     Rectangle player = new Rectangle(400, 100, 40, 55);
@@ -52,6 +52,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     int eMoveY = 0;
     int gravity = 1;
     int distance = 0;
+    int jumps = 0;
     boolean eDirectionLeft = false;
     boolean eInAir = false;
     BufferedImage jedi = loadImage("PixelArtJedi.png");
@@ -90,9 +91,6 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         for (Rectangle block : blocks) {
             g.fillRect(block.x, block.y, block.width, block.height);
 
-        }for (Rectangle jumps: jumpPads){
-            g.setColor(Color.BLUE);
-            g.fillRect(jumps.x, jumps.y, jumps.width, jumps.height);
         }
 
         if (!jLeft && attack) {
@@ -134,16 +132,11 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     // In here is where all the logic for my game will go
     public void run() {
 
-        blocks.add(new Rectangle(550, 550, 100, 50));
-        blocks.add(new Rectangle(150, 550, 100, 50));
-        blocks.add(new Rectangle(650, 500, 50, 100));
-        blocks.add(new Rectangle(700, 450, 100, 150));
-        blocks.add(new Rectangle(250, 350, 300, 50));
-        blocks.add(new Rectangle(100, 500, 50, 100));
-        blocks.add(new Rectangle(0, 450, 100, 150));
+        blocks.add(new Rectangle(300, 550, 200, 50));
         enemies.add(new Rectangle(100, 100, 40, 55));
         enemies.add(new Rectangle(400, 400, 40, 55));
-        jumpPads.add(new Rectangle(150, 550, 100, 1));
+        bullets.add(new Rectangle(100, 130, 40, 55));
+        bullets.add(new Rectangle(400, 400, 40, 55));
         // Used to keep track of time used to draw and update the game
         // This is used to limit the framerate later on
         long startTime;
@@ -195,20 +188,27 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
 
                 enemy.x = enemy.x + eMoveX;
                 enemiesY[i] = enemiesY[i] + gravity;
-                if (eJump && !eInAir) {
-                    enemiesY[i] = -15;
-                    eInAir = true;
-                }
                 enemy.y = enemy.y + enemiesY[i];
                 if (enemy.y + enemy.height > HEIGHT) {
                     enemy.y = HEIGHT - enemy.height;
                     enemiesY[i] = 0;
-                    eInAir = false;
                 }
+                
             }
 
 
             if (attack) {
+                for (Rectangle enemy: enemies){
+                    if (player.intersects(enemy)){
+                        Rectangle intersection = player.intersection(enemy);
+                        if (enemy.x + 20 > player.x + 20 && !jLeft){
+                            enemy.x = -100;
+                        }else if (enemy.x + 20 < player.x + 20 && jLeft){
+                            enemy.x = -100;
+                        }
+                    }
+                }
+                
             }
             for (Rectangle block : blocks) {
                 if (player.intersects(block)) {
@@ -241,21 +241,18 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                         Rectangle intersection = enemy.intersection(block);
                         if (intersection.width < intersection.height) {
                             if (enemy.x < block.x) {
-
-                                enemy.x = enemy.x - intersection.width;
+                                enemy.y = enemy.y - intersection.height;
                             } else {
-
-                                enemy.x = enemy.x + intersection.width;
+                                enemy.y = enemy.y - intersection.height;
                             }
 
                         } else {
                             if (enemy.y > block.y) {
                                 enemy.y = enemy.y + intersection.height;
                                 enemiesY[i] = 0;
-                            } else {
+                            } else if (enemy.y < block.y){
                                 enemy.y = enemy.y - intersection.height;
                                 enemiesY[i] = 0;
-                                eInAir = false;
                             }
                         }
                     }
