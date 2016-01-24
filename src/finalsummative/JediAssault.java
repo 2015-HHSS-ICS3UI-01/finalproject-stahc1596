@@ -32,29 +32,41 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     // you just need to select an approproate framerate
     long desiredFPS = 60;
     long desiredTime = (1000) / desiredFPS;
+    //the color tan
     Color tan = new Color(240, 194, 165);
+    //booleans which determine whether or not the player is moving, jumping, etc
     boolean a = false;
     boolean d = false;
     boolean jump = false;
     boolean jumpR = true;
     boolean eJump = false;
     int inAir = 0;
+    //The life counter. You start with 3 lives.
     int life = 3;
+    //An array which holds a bunch of certain things like blocks and enemies.
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> enemies = new ArrayList<>();
     ArrayList<Rectangle> bullets = new ArrayList<>();
-    int[] enemiesAry = new int[2];
-    int[] enemiesY = new int[2];
+    int[] enemiesAry = new int[10];
+    int[] enemiesY = new int[10];
+    //This is your player.
     Rectangle player = new Rectangle(400, 100, 40, 55);
+    //These integers determine how fast something is moving.
     int moveX = 0;
     int moveY = 0;
     int eMoveX = 0;
     int eMoveY = 0;
     int gravity = 1;
-    int distance = 0;
+    int shotX = 0;
+    //This is the amount of jumps the player takes.
     int jumps = 0;
-    boolean eDirectionLeft = false;
-    boolean eInAir = false;
+    //How many kills you have gotten or more accurately how many enemies are on the screen.
+    int kill = 1;
+    //whether or not the enemy has shot his blaster.
+    boolean fire = false;
+    boolean shot = false;
+    boolean block = false;
+    //Every picture used in the game.
     BufferedImage jedi = loadImage("PixelArtJedi.png");
     BufferedImage jediLeft = loadImage("PixelArtJediLeft.png");
     BufferedImage jediAttack = loadImage("PixelArtJediAttack.png");
@@ -62,9 +74,15 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     BufferedImage heart = loadImage("heart.png");
     BufferedImage heartB = loadImage("heartB.png");
     BufferedImage tatooine = loadImage("tatooineBackground.png");
+    BufferedImage gameOver = loadImage("gameover.png");
+    BufferedImage YouWin = loadImage("YouWin.png");
+    //Determines which way the player is facing.
     boolean jLeft = false;
+    //Determines whether or not the player is attacking.
     boolean attack = false;
 
+    //Helps load the images on the screen, if they can't be loaded onto the screen
+    //then the program will tell me.
     public BufferedImage loadImage(String filename) {
         BufferedImage img = null;
         try {
@@ -85,14 +103,16 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         g.clearRect(0, 0, WIDTH, HEIGHT);
 
         // GAME DRAWING GOES HERE 
+        //This is the tatooine background.
         g.drawImage(tatooine, 0, 0, WIDTH, HEIGHT, null);
 
+        //These are the platforms that are in the map
         g.setColor(tan);
         for (Rectangle block : blocks) {
             g.fillRect(block.x, block.y, block.width, block.height);
 
         }
-
+        //These are all the animations of hte player.
         if (!jLeft && attack) {
             g.drawImage(jediAttack, player.x, player.y, player.width, player.height, null);
         } else if (jLeft && attack) {
@@ -102,11 +122,18 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         } else {
             g.drawImage(jediLeft, player.x, player.y, player.width, player.height, null);
         }
+        //This is the enemy.
         g.setColor(Color.RED);
         for (Rectangle enemy : enemies) {
             g.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
         }
-
+        //This is the enemy's bullet.
+        g.setColor(Color.GREEN);
+        for (Rectangle bullet : bullets) {
+            g.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        }
+        //This is the life counter that you will see at the top left of the screen.
+        //If your life is zero then the game over image appears.
         if (life == 3) {
             g.drawImage(heart, 0, 0, 25, 25, null);
             g.drawImage(heart, 30, 0, 25, 25, null);
@@ -119,10 +146,17 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             g.drawImage(heart, 0, 0, 25, 25, null);
             g.drawImage(heartB, 30, 0, 25, 25, null);
             g.drawImage(heartB, 60, 0, 25, 25, null);
-        } else {
+        } else if (life == 0) {
             g.drawImage(heartB, 0, 0, 25, 25, null);
             g.drawImage(heartB, 30, 0, 25, 25, null);
             g.drawImage(heartB, 60, 0, 25, 25, null);
+            g.drawImage(gameOver, 0, 0, 800, 600, null);
+            kill = -1000;
+        }
+        //if you get 10 kills, you win the game.
+        if (kill == 11) {
+            g.drawImage(YouWin, 0, 0, 800, 600, null);
+            life = 1000;
         }
 
         // GAME DRAWING ENDS HERE
@@ -132,11 +166,35 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     // In here is where all the logic for my game will go
     public void run() {
 
-        blocks.add(new Rectangle(300, 550, 200, 50));
-        enemies.add(new Rectangle(100, 100, 40, 55));
-        enemies.add(new Rectangle(400, 400, 40, 55));
-        bullets.add(new Rectangle(100, 130, 40, 55));
-        bullets.add(new Rectangle(400, 400, 40, 55));
+        //These are all the blocks, enemies, and bullets.
+        blocks.add(new Rectangle(0, 550, 250, 50));
+        blocks.add(new Rectangle(550, 550, 250, 50));
+        blocks.add(new Rectangle(0, 500, 200, 50));
+        blocks.add(new Rectangle(0, 450, 100, 50));
+        blocks.add(new Rectangle(0, 400, 50, 50));
+        blocks.add(new Rectangle(600, 500, 200, 50));
+        blocks.add(new Rectangle(700, 450, 100, 50));
+        blocks.add(new Rectangle(750, 400, 50, 50));
+        enemies.add(new Rectangle(-50, 400, 40, 55));
+        bullets.add(new Rectangle(-40, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
+        enemies.add(new Rectangle(850, 400, 40, 55));
+        bullets.add(new Rectangle(860, 430, 20, 5));
         // Used to keep track of time used to draw and update the game
         // This is used to limit the framerate later on
         long startTime;
@@ -151,6 +209,7 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
 
             // all your game rules and move is done in here
             // GAME LOGIC STARTS HERE 
+            //depending on what button you press, your player will move that way.
             if (a) {
                 moveX = -3;
                 jLeft = true;
@@ -160,56 +219,119 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
             } else {
                 moveX = 0;
             }
-
+            //This is the force of gravity that affects your player.
             moveY = moveY + gravity;
-
+            //This is the jump that your player has, you can double jump.
             if (jump && inAir != 2 && jumpR) {
                 jumpR = false;
                 moveY = -15;
                 inAir++;
             }
+            //Then your player officially moves in which ever direction you wanted
+            //him to move.
             player.x = player.x + moveX;
             player.y = player.y + moveY;
-
+            //This keeps your player from falling off the bottom of the screen.
             if (player.y + player.height > HEIGHT) {
                 player.y = HEIGHT - player.height;
                 moveY = 0;
                 inAir = 0;
+                //This keeps your player from moving off the map whether it's to the
+                //right or left of the screen.
             }
-            for (int i = 0; i < enemies.size(); i++) {
+            if (player.x < 0) {
+                player.x = 0;
+            } else if (player.x > 760) {
+                player.x = 760;
+            }
+            //This is everything that the enemy does.
+            for (int i = 0; i < kill; i++) {
                 Rectangle enemy = enemies.get(i);
-                if (enemy.x > player.x + 250 && enemy.y != player.y) {
+                //Depending on where the player is, the enemy will move to a certain spot.
+                if (enemy.x > player.x + 250) {
                     eMoveX = - 3;
-                } else if (enemy.x < player.x - 250 && enemy.y != player.y) {
+                } else if (enemy.x < player.x - 250) {
                     eMoveX = 3;
+                } else if (!shot && enemy.x > player.x - 250 && enemy.x < player.x + 250) {
+                    eMoveX = 0;
+                    //If the enemy is in range, he will shoot at the player.
+                    shot = true;
                 } else {
                     eMoveX = 0;
                 }
-
+                //The enemy officially moves to where he wants to go.
                 enemy.x = enemy.x + eMoveX;
+                //Enemy is also affected by gravity.
                 enemiesY[i] = enemiesY[i] + gravity;
                 enemy.y = enemy.y + enemiesY[i];
+                //This keeps the enemy from falling off the screen just like the player.
                 if (enemy.y + enemy.height > HEIGHT) {
                     enemy.y = HEIGHT - enemy.height;
                     enemiesY[i] = 0;
                 }
-                
+                //And this keeps the enemy from moving outside of the screen.
+                if (enemy.x < 0 && eMoveX < 0) {
+                    enemy.x = 0;
+                } else if (enemy.x > 760 && eMoveX > 0) {
+                    enemy.x = 760;
+                }
+                Rectangle bullet = bullets.get(i);
+                //This keeps the bullet with the enemy unless he shot the bullet.
+                if (!shot) {
+                    bullet.x = enemy.x + 10;
+                    bullet.y = enemy.y + 30;
+                } //If he shot the bullet it will move until it hits the edge of the screen.
+                else if (shot && enemy.x > player.x && !fire) {
+                    shotX = -5;
+                    fire = true;
+                } else if (shot && enemy.x < player.x && !fire) {
+                    shotX = 5;
+                    fire = true;
+                }
+                //This is where the bullet officially moves.
+                bullet.x = bullet.x + shotX;
+                //This stops the bullet from actually going off screen and returns
+                //to the enemy.
+                if (bullet.x <= 0 || bullet.x >= 800) {
+                    shot = false;
+                    fire = false;
+                    bullet.x = enemy.x + 10;
+                    bullet.y = enemy.y + 30;
+                    shotX = 0;
+                }
+                //If the bullet hits the player, the player loses a life, and the bullet
+                //returns to the enemy.
+                if (bullet.intersects(player)) {
+                    if (!block) {
+                        life = life - 1;
+                        shot = false;
+                        fire = false;
+                        bullet.x = enemy.x + 10;
+                        bullet.y = enemy.y + 30;
+                    } else if (block) {
+                        shotX = shotX * -1;
+                    }
+
+                }
             }
-
-
+            //if the player attacks and hits an enemy, he dies and two more spawn in.
+            //Kind of like a hydra.
             if (attack) {
-                for (Rectangle enemy: enemies){
-                    if (player.intersects(enemy)){
+                for (Rectangle enemy : enemies) {
+                    if (player.intersects(enemy)) {
                         Rectangle intersection = player.intersection(enemy);
-                        if (enemy.x + 20 > player.x + 20 && !jLeft){
+                        if (enemy.x + 20 > player.x + 20 && !jLeft) {
                             enemy.x = -100;
-                        }else if (enemy.x + 20 < player.x + 20 && jLeft){
+                            kill++;
+                        } else if (enemy.x + 20 < player.x + 20 && jLeft) {
                             enemy.x = -100;
+                            kill++;
                         }
                     }
                 }
-                
+
             }
+            //This keeps the player from merging into the blocks.
             for (Rectangle block : blocks) {
                 if (player.intersects(block)) {
                     Rectangle intersection = player.intersection(block);
@@ -219,7 +341,6 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                         } else if (player.x > block.x && jLeft) {
                             player.x = player.x + intersection.width + 2;
                         }
-
 
                     } else {
                         if (player.y > block.y) {
@@ -232,14 +353,15 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                         }
                     }
 
-
                 }
-
-                for (int i = 0; i < enemies.size(); i++) {
+                //This keeps the enemy from merging with the blocks
+                for (int i = 0; i < kill; i++) {
                     Rectangle enemy = enemies.get(i);
                     if (enemy.intersects(block)) {
                         Rectangle intersection = enemy.intersection(block);
                         if (intersection.width < intersection.height) {
+                            //The enemy actually climbs over blocks instead of being
+                            //stopped by them or jumping on them.
                             if (enemy.x < block.x) {
                                 enemy.y = enemy.y - intersection.height;
                             } else {
@@ -250,26 +372,47 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
                             if (enemy.y > block.y) {
                                 enemy.y = enemy.y + intersection.height;
                                 enemiesY[i] = 0;
-                            } else if (enemy.y < block.y){
+                            } else if (enemy.y < block.y) {
                                 enemy.y = enemy.y - intersection.height;
                                 enemiesY[i] = 0;
                             }
                         }
                     }
 
-
                 }
+                //This keeps the enemies from merging with each other.
+                for (int i = 0; i < kill; i++) {
+                    for (int u = 0; u < enemies.size(); u++) {
+                        Rectangle enemy1 = enemies.get(i);
+                        Rectangle enemy2 = enemies.get(u);
+                        if (i == u) {
+
+                        } else if (enemy1.intersects(enemy2)) {
+                            Rectangle intersection = enemy1.intersection(enemy2);
+                            if (intersection.width < intersection.height) {
+                                if (enemy1.x < enemy2.x) {
+                                    enemy1.x = enemy1.x - intersection.width;
+                                } else {
+                                    enemy1.x = enemy1.x + intersection.width;
+                                }
+                            } else {
+                                if (enemy1.y > enemy2.y) {
+                                    enemy1.y = enemy1.y + intersection.height;
+                                    enemiesY[i] = 0;
+                                } else if (enemy1.y < enemy2.y) {
+                                    enemy1.y = enemy1.y - intersection.height;
+                                    enemiesY[i] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
 
-
-
-
             // GAME LOGIC ENDS HERE 
-
             // update the drawing (calls paintComponent)
             repaint();
-
-
 
             // SLOWS DOWN THE GAME BASED ON THE FRAMERATE ABOVE
             // USING SOME SIMPLE MATH
@@ -311,6 +454,9 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         game.run();
     }
 
+    //These are all the controls, they include movement, attacks, jumps, etc.
+    //They also involve the keyboard and mouse.
+
     @Override
     public void keyTyped(KeyEvent e) {
     }
@@ -349,6 +495,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
         //left click will attack and right will deflect
         if (e.getButton() == MouseEvent.BUTTON1) {
             attack = true;
+        } else if (e.getButton() == MouseEvent.BUTTON2) {
+            block = true;
         }
     }
 
@@ -356,6 +504,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     public void mouseReleased(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             attack = false;
+        } else if (e.getButton() == MouseEvent.BUTTON2) {
+            block = false;
         }
     }
 
