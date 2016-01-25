@@ -47,8 +47,8 @@ public class JediAssault extends JComponent implements KeyListener, MouseListene
     ArrayList<Rectangle> blocks = new ArrayList<>();
     ArrayList<Rectangle> enemies = new ArrayList<>();
     ArrayList<Rectangle> bullets = new ArrayList<>();
-    int[] enemiesAry = new int[10];
-    int[] enemiesY = new int[10];
+    int[] enemiesAry = new int[11];
+    int[] enemiesY = new int[11];
     //This is your player.
     Rectangle player = new Rectangle(400, 100, 40, 55);
     //These integers determine how fast something is moving.
